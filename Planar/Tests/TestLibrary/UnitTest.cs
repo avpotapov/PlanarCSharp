@@ -47,6 +47,9 @@ namespace TestLibrary
 
             Assert.IsFalse(libraries.TryGetValue(Library.TypeLibrary.Custom, out library));
             Assert.IsNull(library);
+
+            libraries.Clear();
+            Assert.AreEqual(libraries.Count, 0);
         }
 
         [TestMethod]
@@ -60,7 +63,7 @@ namespace TestLibrary
             libraries.Add(new Library(Library.TypeLibrary.Vendor));
 
             libraries.Serializere();
-          //  Assert.IsTrue(true);
+            Assert.IsTrue(true);
         }
 
 

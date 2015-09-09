@@ -39,7 +39,7 @@ namespace Planar.Library
 
             if (LibraryPath == "")
             {
-                LibraryPath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath);
+                LibraryPath = Path.GetDirectoryName(new Uri(AppDomain.CurrentDomain.BaseDirectory/* Assembly.GetExecutingAssembly().GetName().CodeBase*/).LocalPath);
                 LibraryPath = Path.Combine(LibraryPath, "library");
                 if (!Directory.Exists(LibraryPath))
                     Directory.CreateDirectory(LibraryPath);
@@ -53,19 +53,15 @@ namespace Planar.Library
                 switch (library.Type)
                 {
                     case Library.TypeLibrary.Vendor:
-                        LibraryPath = Path.Combine(LibraryPath, "vendor");
-                        if (!Directory.Exists(LibraryPath))
-                            Directory.CreateDirectory(LibraryPath);
-                        FullFileName = Path.Combine(LibraryPath, "list.xml");
+                        FullFileName = Path.Combine(LibraryPath, "vendor", "list.xml");
                         break;
 
                     case Library.TypeLibrary.Custom:
-                        LibraryPath = Path.Combine(LibraryPath, "custom");
-                        if (!Directory.Exists(LibraryPath))
-                            Directory.CreateDirectory(LibraryPath);
-                        FullFileName = Path.Combine(LibraryPath, "list.xml");
+                        FullFileName = Path.Combine(LibraryPath, "custom", "list.xml");
                         break;
                 }
+                if (!Directory.Exists(Path.GetDirectoryName(FullFileName)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(FullFileName));
 
                 using (libraryWriter = new StreamWriter(FullFileName))
                     librarySerializer.Serialize(libraryWriter, library);
