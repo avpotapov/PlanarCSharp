@@ -11,150 +11,49 @@ using System.Reflection;
 
 namespace Planar.Library
 {
-    public sealed class Libraries : Dictionary<Library.TypeLibrary, Library>
+
+    public enum TypeLibrary
     {
-        private Libraries() { }
-
-        static private Libraries libraries;
-        public static Libraries Instance
-        {
-            get
-            {
-                if (libraries == null)
-                    libraries = new Libraries();
-                return libraries;
-            }
-        }
-
-        public void Add(Library library)
-        {
-            Add(library.Type, library);
-        }
-
-        public void Serializere(string LibraryPath = "")
-        {
-            XmlSerializer librarySerializer;
-            StreamWriter libraryWriter;
-            String FullFileName = "";
-
-            if (LibraryPath == "")
-            {
-                LibraryPath = Path.GetDirectoryName(new Uri(AppDomain.CurrentDomain.BaseDirectory/* Assembly.GetExecutingAssembly().GetName().CodeBase*/).LocalPath);
-                LibraryPath = Path.Combine(LibraryPath, "library");
-                if (!Directory.Exists(LibraryPath))
-                    Directory.CreateDirectory(LibraryPath);
-
-            }
-
-            foreach (var library in Values)
-            {
-                librarySerializer = new XmlSerializer(typeof(Library));
-
-                switch (library.Type)
-                {
-                    case Library.TypeLibrary.Vendor:
-                        FullFileName = Path.Combine(LibraryPath, "vendor", "list.xml");
-                        break;
-
-                    case Library.TypeLibrary.Custom:
-                        FullFileName = Path.Combine(LibraryPath, "custom", "list.xml");
-                        break;
-                }
-                if (!Directory.Exists(Path.GetDirectoryName(FullFileName)))
-                    Directory.CreateDirectory(Path.GetDirectoryName(FullFileName));
-
-                using (libraryWriter = new StreamWriter(FullFileName))
-                    librarySerializer.Serialize(libraryWriter, library);
-            }
-        }
-
-        public void Deserialize(string LibraryPath = "")
-        {
-            if (LibraryPath == "")
-            {
-                LibraryPath = Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().GetName().CodeBase).LocalPath);
-                LibraryPath = Path.Combine(LibraryPath, "library");
-            }
-            AddLibrary(Path.Combine(LibraryPath, "vendor", "list.xml"));
-            AddLibrary(Path.Combine(LibraryPath, "custom", "list.xml"));
-        }
-
-        private void AddLibrary(string FileName)
-        {
-            if (File.Exists(FileName))
-            {
-                XmlSerializer deserializer = new XmlSerializer(typeof(Library));
-                using (TextReader reader = new StreamReader(FileName))
-                {
-                    object obj = deserializer.Deserialize(reader);
-                    Add((Library)obj);
-                }
-            }
-        }
+        [XmlEnum(Name = "vendor")]
+        Vendor,
+        [XmlEnum(Name = "custom")]
+        Custom
     }
 
-
+    /// <summary>
+    /// Библиотека (производителя или разработчика).
+    /// Элемент коллекции Libraries.
+    /// Является коллекцией модулей.
+    /// </summary>
     [XmlRoot("library")]
     public class Library
     {
-        public enum TypeLibrary
+        public Library() { }
+
+        public Library(TypeLibrary typeLibrary)
         {
-            [XmlEnum(Name = "vendor")]
-            Vendor,
-            [XmlEnum(Name = "custom")]
-            Custom
+            TypeLibrary = typeLibrary;
         }
         [XmlAttribute("type")]
-        public TypeLibrary Type { get; set; }
+        public TypeLibrary TypeLibrary { get; set; }
 
         [XmlArray("modules")]
         [XmlArrayItem(ElementName = "module")]
-        public List<Module> ModuleList { get; set; }
+        private List<ModuleDefine> moduleList;
 
-        [XmlIgnore]
-        public Dictionary<int, Module> ModuleDict
+        public List<ModuleDefine> ModuleList
         {
-            get { return ModuleList.ToDictionary(x => x.Uid, x => x); }
-            set { ModuleList = value.Values.ToList(); }
+            get
+            {
+                if (moduleList == null)
+                    moduleList = new List<ModuleDefine>();
 
+                return moduleList;
+            }
+            private set
+            {
+                value = moduleList;
+            }
         }
-        public Library() { }
-        public Library(TypeLibrary typeLibrary) { Type = typeLibrary; }
     }
-
-
-    public class Module
-    {
-
-        [XmlAttribute("uid")]
-        public int Uid { get; set; }
-
-        public enum TypeSignature
-        {
-            [XmlEnum(Name = "none")]
-            None,
-            [XmlEnum(Name = "auto")]
-            Auto,
-            [XmlEnum(Name = "rccu")]
-            Rccu
-        }
-        [XmlAttribute("type_signature")]
-        public TypeSignature Signature { get; set; }
-
-        public enum TypeBootloader
-        {
-            [XmlEnum(Name = "bl1")]
-            Bl1,
-            [XmlEnum(Name = "bl2")]
-            Bl2,
-            [XmlEnum(Name = "bl3")]
-            Bl3
-        }
-        [XmlAttribute("type_bootloader")]
-        public TypeBootloader Bootloader { get; set; }
-
-        [XmlText]
-        public string Value { get; set; }
-    }
-
 }
