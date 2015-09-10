@@ -58,7 +58,5 @@ namespace Planar.Library
 
         [XmlIgnore]
         public Module Module { get; set; }
-
     }
-
 }

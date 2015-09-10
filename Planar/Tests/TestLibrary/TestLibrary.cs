@@ -90,6 +90,65 @@ namespace TestLibrary
         }
 
         [TestMethod]
+        public void TestModuleSerialize()
+        {
+            Library library;
+            Assert.IsNotNull(libraries);
+            libraries.Clear();
+            Assert.AreEqual(libraries.Count, 0);
+
+            // Добавить в коллекцию библиотек новую с указанием типа библиотеки (vendor, custom)
+            libraries.Add(new Library(TypeLibrary.Custom));
+            libraries.Add(new Library(TypeLibrary.Vendor));
+
+            Assert.IsTrue(libraries.TryGetValue(TypeLibrary.Vendor, out library));
+
+            // Список модулей
+            Assert.IsTrue(AddUniqueModule(library, 10));
+            Assert.IsFalse(AddUniqueModule(library, 10));
+            Assert.IsTrue(AddUniqueModule(library, 20));
+            Assert.IsTrue(AddUniqueModule(library, 30));
+            Assert.IsFalse(AddUniqueModule(library, 30));
+            Assert.IsTrue(AddUniqueModule(library, 40));
+
+            // Получить модуль по uid
+            ModuleDefine m = library.ModuleList.Find(x => x.Uid == 10);
+            Assert.IsNotNull(m);
+
+            // Редактировать
+            m.Name = "Test1";
+            m.Module = new Module();
+            m.Module.Description.Add("Строка1");
+            m.Module.Description.Add("Строка2");
+            m.Module.Description.Add("Строка3");
+
+            // Получить модуль по uid
+            m = library.ModuleList.Find(x => x.Uid == 20);
+            Assert.IsNotNull(m);
+
+            // Редактировать
+            m.Name = "Test2";
+            m.Module = new Module();
+            m.Module.Description.Add("Строка4");
+            m.Module.Description.Add("Строка6");
+            m.Module.Description.Add("Строка8");
+            m.Module.Registers.Add(new List<VarDefine>());
+            m.Module.Registers.Add(new List<VarDefine>());
+            m.Module.Registers[0].Add(new VarDefine(TypeRegister.Holding));
+            m.Module.Registers[0].Add(new VarDefine(TypeRegister.Holding));
+            m.Module.Registers[1].Add(new VarDefine(TypeRegister.Input));
+            // Первый набор VarSet
+            m.Module.Registers[0][0].Name = "VarDefine1";
+
+            m.Module.Registers[0][1].Name = "VarDefine2";
+            m.Module.Registers[1][0].Name = "VarDefine3";
+
+            // Сериализация
+            libraries.Serializere();
+            Assert.IsTrue(true);
+        }
+
+        [TestMethod]
         public void TestDeserialize()
         {
 

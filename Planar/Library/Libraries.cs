@@ -47,7 +47,7 @@ namespace Planar.Library
             return libraryPath;
         }
 
-        private string GetFileName(TypeLibrary typeLibrary, string filePath)
+        private string GetListFileName(TypeLibrary typeLibrary, string filePath)
         {
             string fileName = "";
             switch (typeLibrary)
@@ -66,6 +66,11 @@ namespace Planar.Library
             return fileName;
         }
 
+        private string GetModuleFileName(string listFileName, string moduleName)
+        {
+            return Path.Combine(Path.GetDirectoryName(listFileName), moduleName + ".xml");
+        }
+
         public void Serializere(string libraryPath = "")
         {
             XmlSerializer librarySerializer;
@@ -80,10 +85,17 @@ namespace Planar.Library
             {
                 librarySerializer = new XmlSerializer(typeof(Library));
 
-                fileName = GetFileName(library.TypeLibrary, libraryPath);
-            
+                fileName = GetListFileName(library.TypeLibrary, libraryPath);
+
                 using (libraryWriter = new StreamWriter(fileName))
+                {
                     librarySerializer.Serialize(libraryWriter, library);
+                    
+                    // Сериализация каждого модуля библиотеки
+                    foreach (var moduleDefine in library.ModuleList)
+                        if (moduleDefine.Module != null)
+                            moduleDefine.Module.Serialize(GetModuleFileName(fileName, moduleDefine.Name));
+                }
             }
         }
 
@@ -94,10 +106,10 @@ namespace Planar.Library
             if (libraryPath == "")
                 libraryPath = GetDefaultDirectory();
 
-            fileName = GetFileName(TypeLibrary.Vendor, libraryPath);
+            fileName = GetListFileName(TypeLibrary.Vendor, libraryPath);
             AddLibrary(fileName);
 
-            fileName = GetFileName(TypeLibrary.Custom, libraryPath);
+            fileName = GetListFileName(TypeLibrary.Custom, libraryPath);
             AddLibrary(fileName);
         }
 
